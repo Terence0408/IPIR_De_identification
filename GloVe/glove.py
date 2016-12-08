@@ -18,6 +18,7 @@ from scipy import sparse
 from util import listify
 
 
+
 logger = logging.getLogger("glove")
 
 

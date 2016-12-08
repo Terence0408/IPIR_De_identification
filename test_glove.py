@@ -4,8 +4,8 @@ from nose.tools import assert_equal, assert_true
 import numpy as np
 from numpy.testing import assert_allclose
 
-import evaluate
-import glove
+from GloVe import evaluate
+from GloVe import glove
 
 
 # Mock corpus (shamelessly stolen from Gensim word2vec tests)
@@ -23,22 +23,20 @@ I like trees and stuff
 Sometimes I build a graph
 Sometimes I build trees""").split("\n")
 
+# ['human interface computer', 'survey user computer system response time',...]
+
 glove.logger.setLevel(logging.ERROR)
 vocab = glove.build_vocab(test_corpus)
-cooccur = glove.build_cooccur(vocab, test_corpus, window_size=10)
+cooccur = glove.build_cooccur(vocab, test_corpus, window_size=10, min_count=5)
 id2word = evaluate.make_id2word(vocab)
 
 W = glove.train_glove(vocab, cooccur, vector_size=10, iterations=500)
 
+
+
+
+
 # Merge and normalize word vectors
 W = evaluate.merge_main_context(W)
 
-
-def test_similarity():
-    similar = evaluate.most_similar(W, vocab, id2word, 'graph')
-    logging.debug(similar)
-
-    assert_equal('trees', similar[0])
-
-
-print 'end'
+print W[vocab[id2word[2]][0]]

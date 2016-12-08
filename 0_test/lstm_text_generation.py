@@ -56,8 +56,7 @@ model.add(Activation('softmax'))
 
 
 
-optimizer = RMSprop(lr=0.01)
-model.compile(loss='categorical_crossentropy', optimizer=optimizer)
+model.compile(loss='categorical_crossentropy', optimizer='sgd')
 
 model.fit(X, y, batch_size=128, nb_epoch=1)
 

@@ -35,5 +35,7 @@ indices_char = dict((i, c) for i, c in enumerate(chars))
 print('Build model...')
 model = Sequential()
 model.add(LSTM(100, input_shape=(maxlen, len(chars)),activation='tanh', inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5))
+# dropout_W: Dropout prob. for input gates
+# dropout_U: Dropout prob. for recurrent connection
 model.add(Activation('sigmoid'))
 model.fit(X, y, batch_size=128, nb_epoch=1)
