@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Goal: Build label prediction layer and label sequence optimization layer to predict PHI type.
 # Step: 1. Build bidirectional lstm layer.
 #             Input: token(100 dimension) sequence of a sentence.

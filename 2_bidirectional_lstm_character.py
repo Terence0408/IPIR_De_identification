@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Goal: Build Character-enhanced token embedding layer to encode token.
 # Step: 1. Transfer character into 25 binary vector. If all vectors are 0, this character present 'a'.
 #       2. Build bidirectional lstm layer.
