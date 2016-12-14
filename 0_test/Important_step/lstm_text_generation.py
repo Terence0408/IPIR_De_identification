@@ -11,12 +11,11 @@ has at least ~100k characters. ~1M is better.
 
 from __future__ import print_function
 from keras.models import Sequential
-from keras.layers import Dense, Activation, TimeDistributed
+from keras.layers import Dense, Activation, Dropout
 from keras.layers import LSTM
 from keras.optimizers import RMSprop
 from keras.utils.data_utils import get_file
 import numpy as np
-from MyLayer.test_layer2 import test_layer2
 import random
 import sys
 
@@ -41,21 +40,19 @@ print('nb sequences:', len(sentences))
 
 print('Vectorization...')
 X = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
-y = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
+y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
 for i, sentence in enumerate(sentences):
     for t, char in enumerate(sentence):
         X[i, t, char_indices[char]] = 1
-        y[i, t, char_indices[next_chars[i]]] = 1
+    y[i, char_indices[next_chars[i]]] = 1
 
 
 # build the model: a single LSTM
 print('Build model...')
 model = Sequential()
-model.add(LSTM(128, input_shape=(maxlen, len(chars)),activation='tanh', inner_activation='sigmoid', dropout_W=0.2, dropout_U=0.2, return_sequences=True))
-model.add(test_layer2(Dense(len(chars),activation='softmax')))
-#model.add(TimeDistributed(Dense(len(chars),activation='softmax')))
-#model.add(Activation('softmax'))
-
+model.add(LSTM(59, input_shape=(maxlen, len(chars)),activation='tanh', inner_activation='sigmoid', dropout_W=0.2, dropout_U=0.2))
+#model.add(Dense(len(chars)))
+model.add(Activation('softmax'))
 
 
 

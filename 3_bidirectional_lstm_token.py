@@ -57,8 +57,7 @@ for i, sentence in enumerate(sentences):
 print('Build model...')
 model = Sequential()
 model.add(LSTM(128, input_shape=(maxlen, len(chars)),activation='tanh', inner_activation='sigmoid', dropout_W=0.2, dropout_U=0.2, return_sequences=True))
-model.add(TimeDistributed(Dense(len(chars))))
-model.add(Activation('softmax'))
+model.add(TimeDistributed(Dense(len(chars),activation='softmax')))
 
 
 
