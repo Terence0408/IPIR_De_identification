@@ -5,20 +5,20 @@ import psycopg2
 from bs4 import BeautifulSoup
 import re
 
-path = "/home/terence/pycharm_use/RNN/1_data/i2b2/"
+path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/i2b2/"
 
 get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
 get_conn.autocommit = True
 get_cur  = get_conn.cursor()
 
 get_cur.execute("Alter table record_text "
-                "Drop column clean_content; "
+                "Drop column if exists clean_content; "
                 "Alter table record_text "
                 "Add column clean_content text; "
                 "Alter table record_phi "
-                "Drop column clean_text; "
+                "Drop column if exists clean_text; "
                 "Alter table record_phi "
-                "Drop column clean_position; "
+                "Drop column if exists clean_position; "
                 "Alter table record_phi "
                 "Add column clean_text text; "
                 "Alter table record_phi "

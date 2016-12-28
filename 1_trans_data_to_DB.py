@@ -6,7 +6,7 @@ import glob, os
 import re
 import xml.etree.ElementTree as ET
 
-path = "/home/terence/pycharm_use/RNN/1_data/i2b2/"
+path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/i2b2/"
 
 get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
 get_conn.autocommit = True
