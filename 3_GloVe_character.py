@@ -14,12 +14,16 @@ import nltk
 import re
 from GloVe import evaluate
 from GloVe import glove
+import cPickle as pickle
+
+
+path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/"
+
 get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
+
+
 get_conn.autocommit = True
 get_cur  = get_conn.cursor()
-
-
-
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
@@ -60,6 +64,17 @@ W = glove.train_glove(vocab, cooccur, vector_size=100, iterations=500)
 # Merge and normalize word vectors
 W = evaluate.merge_main_context(W)
 
-print W[vocab[id2word[2]][0]]
+#pickle W and vocab
+pickle.dump(vocab,  open(path+"model/GloVe_vocab.pk", "wb" ))
+pickle.dump(W, open(path+"model/GloVe_W.pk", "wb" ))
+
+#vocab = pickle.load(open(path+"model/GloVe_vocab.pk", "rb" ))
+#W = pickle.load(open(path+"model/GloVe_W.pk", "rb" ))
+
+#print W[vocab[id2word[3]][0]]
+#if "having" in vocab.keys():
+#    print W[vocab['having'][0]]
+
+
 
 print "end"
