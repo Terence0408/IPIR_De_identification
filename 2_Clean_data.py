@@ -55,11 +55,12 @@ for row in table:
         location = half_clean[0:half_clean.find(phi)].count(' ')
         half_clean = re.sub(phi, phi_clean, half_clean, 1)
 
-        ter_query  = "Update record_phi set (clean_text, clean_position) = ('"+phi_clean+"',"+str(location)+") "
+        ter_query  = "Update record_phi set (clean_text, clean_position) = ('"+phi_clean.lower()+"',"+str(location)+") "
         ter_query += "Where row_id = "+str(phi_row[0])+";"
         get_cur.execute(ter_query)
+        get_cur.execute(ter_query)
 
-    ter_query = "Update record_text set (clean_content) = ('" + half_clean + "') Where row_id = "+str(row[0])+";"
+    ter_query = "Update record_text set (clean_content) = ('" + half_clean.lower() + "') Where row_id = "+str(row[0])+";"
     get_cur.execute(ter_query)
 
 print "end."
