@@ -8,17 +8,18 @@
 #             4. Output dimension: 100
 
 import logging
-
+import cPickle as pickle
 import psycopg2
+import numpy as np
+np.random.seed(19870712)  # for reproducibility
+path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/"
+get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
+
+
 import nltk
 import re
 from GloVe import evaluate
 from GloVe import glove
-import cPickle as pickle
-
-
-path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/"
-get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
 
 
 get_conn.autocommit = True

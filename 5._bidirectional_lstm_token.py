@@ -15,15 +15,21 @@
 #                   y: 19 PHI label(18 PHI-type and 1 non PHI)
 
 
-from __future__ import print_function
+import logging
+import cPickle as pickle
+import psycopg2
+import numpy as np
+np.random.seed(19870712)  # for reproducibility
+path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/"
+get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
+
+
 from keras.models import Sequential
 from keras.layers import Dense, Activation, TimeDistributed
 from keras.layers import LSTM
 from keras.optimizers import RMSprop
 from keras.utils.data_utils import get_file
-import numpy as np
-import random
-import sys
+
 
 path = get_file('nietzsche.txt', origin="https://s3.amazonaws.com/text-datasets/nietzsche.txt")
 text = open(path).read().lower()

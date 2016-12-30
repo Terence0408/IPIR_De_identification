@@ -11,31 +11,50 @@
 #                      Dropout: prob. = 0.5
 #       3. Concentrate GloVe result and lstm result. If no GloVe result, use lstm result instant of.
 
-from __future__ import print_function
+import logging
+import cPickle as pickle
+import psycopg2
+import numpy as np
+np.random.seed(19870712)  # for reproducibility
+path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/"
+get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
+
+
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Dropout
 from keras.layers import LSTM
 from keras.optimizers import RMSprop
 from keras.utils.data_utils import get_file
-import numpy as np
-import random
-import sys
+
+
+vocab = pickle.load(open(path+"model/GloVe_vocab.pk", "rb" ))
+W = pickle.load(open(path+"model/GloVe_W.pk", "rb" ))
+
+if "having" in vocab.keys():
+    print W[vocab['having'][0]]
+
+maxlen = len(max(vocab.keys(), key=len))
+# maxlen = 32
+
+chars = sorted(list(set(" ".join(vocab.keys()))))
+
+
+len("123".ljust(maxlen))
+
+
+
+X = np.zeros((len(vocab.keys()), maxlen, len(chars)), dtype=np.bool)
+y = np.zeros((W.shape[0], W.shape[1]), dtype=np.float64)
+
+for i in vocab.keys():
+    texts.append(i.ljust(maxlen))
 
 
 
 
 
 
-chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
-print('total chars:', len(chars))
-char_indices = dict((c, i) for i, c in enumerate(chars))
-indices_char = dict((i, c) for i, c in enumerate(chars))
 
 
-print('Build model...')
-model = Sequential()
-model.add(LSTM(100, input_shape=(maxlen, len(chars)),activation='tanh', inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5))
-# dropout_W: Dropout prob. for input gates
-# dropout_U: Dropout prob. for recurrent connection
-model.add(Activation('sigmoid'))
-model.fit(X, y, batch_size=128, nb_epoch=1)
+
+print "end"

@@ -1,14 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import logging
+import cPickle as pickle
 import psycopg2
-from bs4 import BeautifulSoup
-import re
-
+import numpy as np
+np.random.seed(19870712)  # for reproducibility
 path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/"
 get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
 
 
+import re
 
 
 get_conn.autocommit = True
