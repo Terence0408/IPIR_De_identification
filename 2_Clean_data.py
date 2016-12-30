@@ -5,9 +5,12 @@ import psycopg2
 from bs4 import BeautifulSoup
 import re
 
-path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/i2b2/"
-
+path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/"
 get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
+
+
+
+
 get_conn.autocommit = True
 get_cur  = get_conn.cursor()
 

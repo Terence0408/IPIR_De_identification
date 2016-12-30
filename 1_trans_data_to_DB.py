@@ -6,9 +6,10 @@ import glob, os
 import re
 import xml.etree.ElementTree as ET
 
-path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/i2b2/"
-
+path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/"
 get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
+
+
 get_conn.autocommit = True
 get_cur  = get_conn.cursor()
 
@@ -33,15 +34,15 @@ get_cur.execute("Create table Record_text ("
                 "  train integer);")
 
 
-os.chdir(path +"training-PHI-Gold-Set1/")
+os.chdir(path +"i2b2/training-PHI-Gold-Set1/")
 subject = glob.glob("*.xml")
 subject_len = [len(subject)]
 
-os.chdir(path +"training-PHI-Gold-Set2/")
+os.chdir(path +"i2b2/training-PHI-Gold-Set2/")
 subject += glob.glob("*.xml")
 subject_len.append(len(subject))
 
-os.chdir(path +"testing-PHI-Gold-fixed/")
+os.chdir(path +"i2b2/testing-PHI-Gold-fixed/")
 subject += glob.glob("*.xml")
 subject_len.append(len(subject))
 
@@ -50,13 +51,13 @@ for i in range(0, subject_len[2]):
     (subject_id, order_id) = re.findall(r"[\w']+", subject[i])[0:2]
 
     if i<subject_len[0]:
-        tree = ET.parse(path + "training-PHI-Gold-Set1/" + subject[i])
+        tree = ET.parse(path + "i2b2/training-PHI-Gold-Set1/" + subject[i])
         train = '1'
     elif i<subject_len[1]:
-        tree = ET.parse(path + "training-PHI-Gold-Set2/" + subject[i])
+        tree = ET.parse(path + "i2b2/training-PHI-Gold-Set2/" + subject[i])
         train = '1'
     else:
-        tree = ET.parse(path + "testing-PHI-Gold-fixed/" + subject[i])
+        tree = ET.parse(path + "i2b2/testing-PHI-Gold-fixed/" + subject[i])
         train = '0'
 
     root = tree.getroot()
