@@ -44,5 +44,5 @@ model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
 print('Train...')
 model.fit(X_train, y_train,
           batch_size=batch_size,
-          nb_epoch=4,
+          nb_epoch=1,
           validation_data=[X_test, y_test])
