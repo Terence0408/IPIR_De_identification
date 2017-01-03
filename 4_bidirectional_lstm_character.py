@@ -88,7 +88,7 @@ model.fit([X,X], y,
           nb_epoch=1)
 
 
-
+preds = model.predict([X[0:1],X[0:1]], verbose=0)[0]
 
 
 print "end"
