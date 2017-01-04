@@ -67,14 +67,18 @@ W = evaluate.merge_main_context(W)
 #pickle W and vocab
 pickle.dump(vocab,  open(path+"model/GloVe_vocab.pk", "wb" ))
 pickle.dump(W, open(path+"model/GloVe_W.pk", "wb" ))
-
-#vocab = pickle.load(open(path+"model/GloVe_vocab.pk", "rb" ))
-#W = pickle.load(open(path+"model/GloVe_W.pk", "rb" ))
-
-#print W[vocab[id2word[3]][0]]
-#if "having" in vocab.keys():
-#    print W[vocab['having'][0]]
-
-
-
 print "end"
+
+
+# load model and test.
+'''
+
+vocab = pickle.load(open(path+"model/GloVe_vocab.pk", "rb" ))
+W = pickle.load(open(path+"model/GloVe_W.pk", "rb" ))
+
+if "having" in vocab.keys():
+    print W[vocab['having'][0]]
+print 'Load no error.'
+'''
+
+
