@@ -27,7 +27,7 @@ get_cur  = get_conn.cursor()
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
-get_cur.execute("Select row_id, subject_id, order_id, content from record_text;")# where subject_id= 253 and order_id =3;")
+get_cur.execute("Select row_id, subject_id, order_id, content from record_text;")# where subject_id= 253 and order_id =1;")
 table = get_cur.fetchall()
 
 
