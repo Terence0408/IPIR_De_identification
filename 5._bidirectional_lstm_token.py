@@ -64,6 +64,15 @@ map_LSTM = model.predict([x,x], verbose=0)
 print 'Load no error.'
 '''
 
+
+
+
+
+
+
+
+
+
 get_cur.execute("Select row_id, subject_id, order_id, content from record_text where train = 1;")# where subject_id= 253 and order_id =3;")
 table = get_cur.fetchall()
 
