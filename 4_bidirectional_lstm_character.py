@@ -43,10 +43,10 @@ char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
 
-char_X_100 = len(vocab.keys())                # words: 30642
-char_X_010 = len(max(vocab.keys(), key=len))  # max word length: 32
+char_X_100 = len(vocab.keys())                # words: 33299
+char_X_010 = len(max(vocab.keys(), key=len))  # max word length: 54
 char_X_001 = len(chars)                       # chars: 37
-char_Y_10  = W.shape[0]                       # words: 30642
+char_Y_10  = W.shape[0]                       # words: 33299
 char_Y_01  = W.shape[1]                       # encode word length: 100
 
 
@@ -78,13 +78,12 @@ model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
 
 model.fit([X,X], y,
           batch_size=128,
-          nb_epoch=1)
+          nb_epoch=100)
 
 model.save(path+"model/biLSTM_char.pk")
 print "end"
 
 # load model and test.
-
 '''
 model = load_model(path+"model/biLSTM_char.pk")
 chars= [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -103,6 +102,3 @@ for j in range(0, len(text)):
     x[0, j, char_indices[text[j]]] = 1
 map_LSTM = model.predict([x,x], verbose=0)
 '''
-
-
-

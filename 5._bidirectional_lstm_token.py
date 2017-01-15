@@ -7,12 +7,12 @@
 #             Output: 100 dimension.
 #       2. Add dense layer
 #             Input: 100 dimension(lstm layer result)
-#             Output: 19 prob. dimension
+#             Output: 24 prob. dimension
 #       3. Add label sequence optimization layer
-#             Input: 19 prob. dimension(dense layer result)
-#             Output: 19 PHI label(binary vector)
+#             Input: 24 prob. dimension(dense layer result)
+#             Output: 24 PHI label(binary vector)
 #       Train step: x: token(100 dimension) sequence of a sentence.
-#                   y: 19 PHI label(18 PHI-type and 1 non PHI)
+#                   y: 24 PHI label(18 PHI-type and 1 non PHI)
 
 
 import logging
@@ -27,7 +27,7 @@ import nltk
 import re
 import h5py # It needs at save keras model
 from keras.models import Sequential, load_model
-from keras.layers import LSTM, TimeDistributed, Dense
+from keras.layers import LSTM, TimeDistributed, Dense, MaxoutDense
 from keras.engine.topology import Merge
 
 get_conn.autocommit = True
@@ -37,17 +37,39 @@ vocab = pickle.load(open(path+"model/GloVe_vocab.pk", "rb" ))
 W = pickle.load(open(path+"model/GloVe_W.pk", "rb" ))
 model = load_model(path+"model/biLSTM_char.pk")
 
-chars= [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+get_cur.execute("Select row_id, subject_id, order_id, sentence_id, sentence, labels from sentence_text where train = 1;")# where subject_id= 253 and order_id =3;")
+table = get_cur.fetchall()
+sentences = []
+for row in table:
+    sentences.append([row[0],row[1],row[2],row[3],row[4].split(),row[5].split()])
+
+
+chars = [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
         'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
-char_X_100 = len(vocab.keys())                # words: 30642
-char_X_010 = len(max(vocab.keys(), key=len))  # max word length: 32
-char_X_001 = len(chars)                       # chars: 37
-char_Y_10  = W.shape[0]                       # words: 30642
-char_Y_01  = W.shape[1]                       # encode word length: 100
+label = ["NONE", "BIOID", "DOCTOR", "ORGANIZATION", "PATIENT", "USERNAME",
+         "FAX", "HEALTHPLAN", "HOSPITAL", "STREET", "AGE", "EMAIL",
+         "PHONE", "DEVICE", "CITY", "DATE", "IDNUM", "URL",
+         "COUNTRY", "LOCATION-OTHER", "STATE", "PROFESSION", "MEDICALRECORD", "ZIP"]
+labe_indices = dict((c, i) for i, c in enumerate(label))
+indices_labe = dict((i, c) for i, c in enumerate(label))
+
+chara_x_100 = 1                                # words: 1
+chara_x_010 = len(max(vocab.keys(), key=len))  # max word length: 54
+chara_x_001 = len(chars)                       # chars: 37
+chara_y_10  = 1                                # words: 1
+chara_y_01  = W.shape[1]                       # encode word length: 100
+
+token_x_100 = len(sentences)                   # sentences: 33700
+token_x_010 = 30                               # sentences length: 30
+token_x_001 = W.shape[1]                       # encode word length: 100
+token_y_100 = len(sentences)                   # sentences: 33700
+token_y_010 = 30                               # sentences length: 30
+token_y_001 = 24                               # PHI level: 23+1
+
 
 # load model and test.
 '''
@@ -61,96 +83,106 @@ for j in range(0, len(text)):
     x[0, j, char_indices[text[j]]] = 1
 map_LSTM = model.predict([x,x], verbose=0)
 
-print 'Load no error.'
+print 'Load model and test.'
 '''
-
-
-
-
-
-
-
-
-
-
-get_cur.execute("Select row_id, subject_id, order_id, content from record_text where train = 1;")# where subject_id= 253 and order_id =3;")
-table = get_cur.fetchall()
-
-# Split content into sentence.
-tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-sentences=[]
-for row in table:
-    ter_query = "Select row_id, subject_id, order_id, text, id "
-    ter_query += "from record_phi "
-    ter_query += "where subject_id = " + str(row[1]) + " and order_id = " + str(row[2]) + " "
-    ter_query += "order by id ;"
-    get_cur.execute(ter_query)
-    phi_table = get_cur.fetchall()
-
-    content = row[3]
-    for phi_row in phi_table:
-        phi = re.sub(" ", "_", phi_row[3])
-        phi_clean = re.sub("[^0-9a-zA-Z]", "", phi)
-        content = re.sub(phi, phi_clean, content)
-    row_sentences = tokenizer.tokenize(content)
-    for sentence in row_sentences:
-        sentences.append( " ".join(re.sub("[^0-9a-zA-Z]", " ", sentence).lower().split()))
-
-print len(sentences) #33793
-
-
 # Define sentence length 95% sentence less then 30 words.
 '''
 lens=[]
 for i in sentences:
-    lens.append(len(i.split()))
+    lens.append(len(i[4]))
 arlens=np.asarray(lens)
-print np.percentile(arlens, 91.5) # 30.0
+print "Define sentence length 91.5% sentence less then "+ str(np.percentile(arlens, 91.5)) +" words." # 30.0
 '''
 
+# Adjust tokens into fixed size, adjust sentences and labels into fixed size.
+adjusts = []
+for i in range(0, len(sentences)):
+    sentence = sentences[i]
+
+    tokens = [" "*chara_x_010] * 30
+    for j in range(0,min(len(sentences[i][4]), token_x_010)):
+        tokens[j] = sentences[i][4][j][0:min(len(sentences[i][4][j]),chara_x_010)].ljust(chara_x_010)
+
+    labels = ['NONE'] * token_y_010
+    for j in range(0,min(len(sentences[i][5]), token_x_010)):
+        labels[j] = sentences[i][5][j]
+
+    adjusts.append([sentence[0], sentence[1], sentence[2], sentence[3], tokens, labels])
 
 
-token_X_100 = len(sentences)                   # sentences: 33793
-token_X_010 = 30                               # sentences length: 30
-token_X_001 = W.shape[1]                       # encode word length: 100
-token_Y_100 = len(sentences)                   # sentences: 33793
-token_Y_010 = 30                               # sentences length: 30
-token_Y_001 = 19                               # PHI level: 18+1
 
+# Transform sentences and labels into numpy array.
+token_x = np.zeros((token_x_100, token_x_010, token_x_001), dtype=np.float64) # token_x.shape => (33700, 30, 100)
+token_y = np.zeros((token_y_100, token_y_010, token_y_001), dtype=np.bool)    # token_y.shape => (33700, 30, 24)
+for i in range(0, len(adjusts)):
+    sentence = adjusts[i]
+    sentence_x = np.zeros((token_x_010,  token_x_001), dtype=np.float64) # sentence_x.shape: (30,100)
+    sentence_y = np.zeros((token_y_010,  token_y_001), dtype=np.bool)    # sentence_x.shape: (30, 19)
+    for j in range(0, token_x_010): # range(0,30)
 
-text_sentences = []
+        # Transform sentences into numpy array.
 
-for sentence in sentences:
-    tokens = [" "*char_X_010] * 30
-    temp_tokens = sentence.split()
-    for i in range(0, min(len(temp_tokens),30)):
-        tokens[i] = temp_tokens[i].ljust(char_X_010)[0:char_X_010]
-    text_sentences.append(tokens)
+        chars = sentence[4][j]
+        # encoding token by biLSTM.
+        chara_x = np.zeros((1, chara_x_010, chara_x_001), dtype=np.bool)  # chara_x_001.shape => (1, 54, 37)
+        for k in range(0, chara_x_010): # range(0,54)
+            chara_x[0, k, char_indices[chars[k]]] = 1
+        encode_biLSTM = model.predict([chara_x, chara_x], verbose=0)
 
-
-X = np.zeros((token_X_100, token_X_010, token_X_001), dtype=np.float64) # X.shape => (33793, 30, 100)
-y = np.zeros((token_Y_100, token_Y_010, token_Y_001), dtype=np.float64) # X.shape => (33793, 30, 19)
-
-for i in range(0, len(text_sentences)):
-    char_x_01 = np.zeros((1, token_X_010, token_X_001), dtype=np.float64)  # char_x_01.shape => (1,30,100)
-    sentence = text_sentences[i]
-    for j in range(0, len(sentence)):
-        char_x_001 = np.zeros((1, char_X_010, char_X_001), dtype=np.bool)  # char_x_001.shape => (1,32,37)
-        token = sentence[j]
-        for k in range(0, len(token)):
-            char_x_001[0, k, char_indices[token[k]]] = 1
-
-        if token.strip() in vocab.keys():
-            map_GloVe = W[vocab[token.strip()][0]].reshape(1, 100)
-            map_LSTM = model.predict([char_x_001, char_x_001], verbose=0)
-            encode = np.mean([map_GloVe, map_LSTM], axis=0)  # encode.shape => (1,100)
+        # encoding token by GloVe(if have), then concentrate them. If token not in GloVe vocab., only use biLSTM
+        if chars.strip() in vocab.keys():
+            encode_GloVe = W[vocab[chars.strip()][0]].reshape(1, 100)
+            encode = np.mean([encode_biLSTM, encode_GloVe], axis=0)  # encode.shape => (1,100)
         else:
-            encode = model.predict([char_x_001, char_x_001], verbose=0)  # encode.shape => (1,100)
-        char_x_01[0][j] = encode
-    X[i] = char_x_01[0]
+            encode = encode_biLSTM
+        sentence_x[j] = encode
 
 
+        # Transform labels into numpy array.
+        lable = sentence[5][j]
+        lable_y = np.zeros((1, token_y_001), dtype=np.bool) # lable_y.shape => (1, 24)
+        lable_y[0, labe_indices[lable]] = 1
+        sentence_y[j] = lable_y
+
+    token_x[i] = sentence_x
+    token_y[i] = sentence_y
+
+pickle.dump(token_x,  open(path+"model/token_x.pk", "wb"))
+pickle.dump(token_y,  open(path+"model/token_y.pk", "wb"))
 
 
+# build the model: a bidirectional LSTM
+
+token_x = pickle.load(open(path+"model/token_x.pk", "rb" ))
+token_y = pickle.load(open(path+"model/token_y.pk", "rb" ))
+
+print('Build model...')
+left = Sequential()
+left.add(LSTM(100, input_shape=(token_x_010, token_x_001), activation='tanh',
+              inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5,
+              return_sequences=True))
+
+right = Sequential()
+right.add(LSTM(100, input_shape=(token_x_010, token_x_001), activation='tanh',
+               inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5, go_backwards=True,
+               return_sequences=True))
+
+
+label_model = Sequential()
+label_model.add(Merge([left, right], mode='sum'))
+label_model.add(TimeDistributed(Dense((24), activation='sigmoid')))
+#model.add(MaxoutDense(pool_length = 1))
+
+label_model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
+
+label_model.fit([token_x,token_x], token_y,
+          batch_size=128,
+          nb_epoch=10)
+label_model.save(path+"model/biLSTM_label.pk")
+
+pred = label_model.predict([token_x[0:1],token_x[0:1]], verbose=0)
+pred_labels=[]
+for j in range(0,token_y_010):
+    pred_labels.append(indices_labe[np.argmax(pred[0][j])])
 
 print "end"

@@ -23,8 +23,7 @@ get_cur  = get_conn.cursor()
 
 get_cur.execute("DROP TABLE IF EXISTS Record_text;"
                 "DROP TABLE IF EXISTS Record_PHI;"
-                "DROP TABLE IF EXISTS sentence_text;"
-                "DROP TABLE IF EXISTS sentence_PHI;")
+                "DROP TABLE IF EXISTS sentence_text;")
 get_cur.execute("Create table Record_text ("
                 "  row_id serial primary key, "
                 "  subject_id integer,"
@@ -46,16 +45,14 @@ get_cur.execute("Create table Record_text ("
                 "  clean_text text"
                 "  clean_position integer"
                 "  sentence_id integer"
-                "  sentence_position integer);")
-get_cur.execute("Create table sentence_PHI ("
+                "  sentence_position integer);"
+                "Create table sentence_text ("
                 "  row_id serial primary key,"
                 "  subject_id integer,"
                 "  order_id integer,"
                 "  sentence_id integer,"
-                "  phi_id integer,"
-                "  text text,"
-                "  type text,"
-                "  location integer,"
+                "  sentence text,"
+                "  labels text,"
                 "  train integer);")
 
 

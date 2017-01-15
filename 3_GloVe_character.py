@@ -27,30 +27,14 @@ get_cur  = get_conn.cursor()
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
-get_cur.execute("Select row_id, subject_id, order_id, content from record_text;")# where subject_id= 253 and order_id =1;")
+get_cur.execute("Select row_id, subject_id, order_id, sentence_id, sentence from sentence_text;")# where subject_id= 253 and order_id =1;")
 table = get_cur.fetchall()
-
-
 
 sentences=[]
 for row in table:
-    ter_query = "Select row_id, subject_id, order_id, text, id "
-    ter_query += "from record_phi "
-    ter_query += "where subject_id = " + str(row[1]) + " and order_id = " + str(row[2]) + " "
-    ter_query += "order by id ;"
-    get_cur.execute(ter_query)
-    phi_table = get_cur.fetchall()
+    sentences.append(row[4])
 
-    content = row[3]
-    for phi_row in phi_table:
-        phi = re.sub(" ", "_", phi_row[3])
-        phi_clean = re.sub("[^0-9a-zA-Z]", "", phi)
-        content = re.sub(phi, phi_clean, content)
-    row_sentences = tokenizer.tokenize(content)
-    for sentence in row_sentences:
-        sentences.append( " ".join(re.sub("[^0-9a-zA-Z]", " ", sentence).lower().split()))
-
-print len(sentences) #56328
+print len(sentences) #56182
 
 
 glove.logger.setLevel(logging.ERROR)
