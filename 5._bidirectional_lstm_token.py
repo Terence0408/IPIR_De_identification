@@ -95,6 +95,7 @@ print "Define sentence length 91.5% sentence less then "+ str(np.percentile(arle
 '''
 
 # Adjust tokens into fixed size, adjust sentences and labels into fixed size.
+
 adjusts = []
 for i in range(0, len(sentences)):
     sentence = sentences[i]
@@ -152,7 +153,6 @@ pickle.dump(token_y,  open(path+"model/token_y.pk", "wb"))
 
 
 # build the model: a bidirectional LSTM
-
 token_x = pickle.load(open(path+"model/token_x.pk", "rb" ))
 token_y = pickle.load(open(path+"model/token_y.pk", "rb" ))
 
@@ -180,9 +180,16 @@ label_model.fit([token_x,token_x], token_y,
           nb_epoch=10)
 label_model.save(path+"model/biLSTM_label.pk")
 
-pred = label_model.predict([token_x[0:1],token_x[0:1]], verbose=0)
+
+# prediction test
+'''
+i=1100
+pred = label_model.predict([token_x[i:i+1],token_x[i:i+1]], verbose=0)
 pred_labels=[]
 for j in range(0,token_y_010):
     pred_labels.append(indices_labe[np.argmax(pred[0][j])])
+print "pred :"+pred_labels
+print "read :"+adjusts[i][5]
+'''
 
 print "end"
