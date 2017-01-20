@@ -19,6 +19,7 @@ import logging
 import cPickle as pickle
 import psycopg2
 import numpy as np
+import matplotlib.pyplot as plt
 np.random.seed(19870712)  # for reproducibility
 path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/"
 get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
@@ -173,12 +174,12 @@ label_model.add(Merge([left, right], mode='sum'))
 label_model.add(TimeDistributed(Dense((24), activation='sigmoid')))
 #model.add(MaxoutDense(pool_length = 1))
 
-label_model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
+label_model.compile('adam', 'categorical_crossentropy', metrics=['accuracy'])
 
-label_model.fit([token_x,token_x], token_y,
+train = label_model.fit([token_x,token_x], token_y,
           batch_size=128,
-          nb_epoch=10)
-label_model.save(path+"model/biLSTM_label.pk")
+          nb_epoch=1)
+label_model.save(path+"model/biLSTM_label_1.pk")
 
 
 # prediction test
@@ -188,8 +189,24 @@ pred = label_model.predict([token_x[i:i+1],token_x[i:i+1]], verbose=0)
 pred_labels=[]
 for j in range(0,token_y_010):
     pred_labels.append(indices_labe[np.argmax(pred[0][j])])
-print "pred :"+pred_labels
-print "read :"+adjusts[i][5]
+print "pred :"+" ".join(pred_labels)
+print "read :"+" ".join(adjusts[i][5])
 '''
+
+plt.plot(train.history['acc'])
+plt.plot(train.history['val_acc'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+plt.plot(train.history['loss'])
+plt.plot(train.history['val_loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
 
 print "end"
