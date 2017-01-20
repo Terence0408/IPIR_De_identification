@@ -46,11 +46,19 @@ for row in table:
     sentences.append([row[0],row[1],row[2],row[3],row[4].split(),row[5].split()])
 '''
 
-get_cur.execute("Select row_id, subject_id, order_id, clean_content, labels from sentence_text where train = 1;")# where subject_id= 253 and order_id =3;")
+get_cur.execute("Select row_id, subject_id, order_id, clean_content, labels from record_text where train = 1;")# where subject_id= 253 and order_id =3;")
 table = get_cur.fetchall()
-sentences = []
+contents = []
 for row in table:
-    sentences.append([row[0],row[1],row[2],row[3],row[4].split(),row[5].split()])
+    contents.append([row[0],row[1],row[2],row[3].split(),row[4].split()])
+
+token_x_010 = 30
+sentences = []
+for content in contents:
+    for i in range(0,len(content[3])-token_x_010+1):
+        sentences.append([content[0],content[1],content[2],"1",content[3][i:i+token_x_010],content[4][i:i+token_x_010]])
+
+
 
 
 chars = [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -201,20 +209,6 @@ print "pred :"+" ".join(pred_labels)
 print "read :"+" ".join(adjusts[i][5])
 '''
 
-plt.plot(train.history['acc'])
-plt.plot(train.history['val_acc'])
-plt.title('model accuracy')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
-plt.show()
 
-plt.plot(train.history['loss'])
-plt.plot(train.history['val_loss'])
-plt.title('model loss')
-plt.ylabel('loss')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
-plt.show()
 
 print "end"
