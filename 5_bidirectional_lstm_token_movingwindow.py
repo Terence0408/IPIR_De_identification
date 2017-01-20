@@ -38,7 +38,15 @@ vocab = pickle.load(open(path+"model/GloVe_vocab.pk", "rb" ))
 W = pickle.load(open(path+"model/GloVe_W.pk", "rb" ))
 model = load_model(path+"model/biLSTM_char.pk")
 
+'''
 get_cur.execute("Select row_id, subject_id, order_id, sentence_id, sentence, labels from sentence_text where train = 1;")# where subject_id= 253 and order_id =3;")
+table = get_cur.fetchall()
+sentences = []
+for row in table:
+    sentences.append([row[0],row[1],row[2],row[3],row[4].split(),row[5].split()])
+'''
+
+get_cur.execute("Select row_id, subject_id, order_id, clean_content, labels from sentence_text where train = 1;")# where subject_id= 253 and order_id =3;")
 table = get_cur.fetchall()
 sentences = []
 for row in table:

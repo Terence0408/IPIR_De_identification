@@ -67,6 +67,24 @@ for row in table:
 print 'Find phi location in content.'
 '''
 
+# Add phi labels in content.
+get_cur.execute("Select row_id, subject_id, order_id, clean_content from record_text;")# where subject_id= 287 and order_id =2;")
+table = get_cur.fetchall()
+for row in table:
+    ter_query = "Select row_id, subject_id, order_id ,type, clean_position "
+    ter_query += "from record_phi "
+    ter_query += "where subject_id = " + str(row[1]) + " and order_id = " + str(row[2]) + " "
+    ter_query += "order by clean_position ;"
+    get_cur.execute(ter_query)
+    phi_table = get_cur.fetchall()
+    labels = ['NONE']*len(row[3].split())
+    for phi_row in phi_table:
+        labels[phi_row[4]] = phi_row[3]
+    ter_query = "Update record_text set (labels) = ('" +" ".join(labels)+ "') "
+    ter_query += "Where row_id = " + str(row[0]) + ";"
+    get_cur.execute(ter_query)
+print 'Add phi labels in content.'
+
 # Clean sentence.
 '''
 get_cur.execute("DROP TABLE IF EXISTS sentence_text;")
