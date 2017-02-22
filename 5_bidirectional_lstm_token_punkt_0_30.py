@@ -31,6 +31,7 @@ from keras.models import Sequential, load_model
 from keras.layers import LSTM, TimeDistributed, Dense, MaxoutDense
 from keras.engine.topology import Merge
 
+
 get_conn.autocommit = True
 get_cur  = get_conn.cursor()
 
@@ -38,21 +39,12 @@ vocab = pickle.load(open(path+"model/GloVe_vocab.pk", "rb" ))
 W = pickle.load(open(path+"model/GloVe_W.pk", "rb" ))
 model = load_model(path+"model/biLSTM_char.pk")
 
-
-get_cur.execute("Select row_id, subject_id, order_id, clean_content, labels from record_text where train = 1;")# where subject_id= 253 and order_id =3;")
+get_cur.execute("Select row_id, subject_id, order_id, sentence_id, sentence, labels from sentence_text where train = 1;")# where subject_id= 253 and order_id =3;")
 table = get_cur.fetchall()
-contents = []
-for row in table:
-    contents.append([row[0],row[1],row[2],row[3].split(),row[4].split()])
-
-token_x_010 = 30
 sentences = []
-for content in contents:
-    for i in range(0,len(content[3])-token_x_010+1,5):
-        sentences.append([content[0],content[1],content[2],"1",content[3][i:i+token_x_010],content[4][i:i+token_x_010]])
+for row in table:
+    sentences.append([row[0],row[1],row[2],row[3],row[4].split(),row[5].split()])
 
-
-print 123
 
 chars = [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
@@ -82,32 +74,30 @@ token_y_001 = 24                               # PHI level: 23+1
 
 
 # load model and test.
-'''
-if "having" in vocab.keys():
-    map_GloVe = W[vocab['having'][0]]
+#if "having" in vocab.keys():
+#    map_GloVe = W[vocab['having'][0]]
+#
+#text = 'having'.ljust(len_X_010)
+#x = np.zeros((1, len_X_010, len_X_001), dtype=np.bool)
+#
+#for j in range(0, len(text)):
+#    x[0, j, char_indices[text[j]]] = 1
+#map_LSTM = model.predict([x,x], verbose=0)
+#
+#print 'Load model and test.'
 
-text = 'having'.ljust(len_X_010)
-x = np.zeros((1, len_X_010, len_X_001), dtype=np.bool)
+#Define sentence length 95% sentence less then 30 words.
 
-for j in range(0, len(text)):
-    x[0, j, char_indices[text[j]]] = 1
-map_LSTM = model.predict([x,x], verbose=0)
+#lens=[]
+#for i in sentences:
+#    lens.append(len(i[4]))
+#arlens=np.asarray(lens)
+#print "Define sentence length 91.5% sentence less then "+ str(np.percentile(arlens, 91.5)) +" words." # 30.0
 
-print 'Load model and test.'
-'''
-# Define sentence length 95% sentence less then 30 words.
-'''
-lens=[]
-for i in sentences:
-    lens.append(len(i[4]))
-arlens=np.asarray(lens)
-print "Define sentence length 91.5% sentence less then "+ str(np.percentile(arlens, 91.5)) +" words." # 30.0
-'''
-
-print 345
-# Adjust tokens into fixed size, adjust sentences and labels into fixed size.
 
 adjusts = []
+# Adjust tokens into fixed size, adjust sentences and labels into fixed size.
+
 for i in range(0, len(sentences)):
     sentence = sentences[i]
 
@@ -121,7 +111,7 @@ for i in range(0, len(sentences)):
 
     adjusts.append([sentence[0], sentence[1], sentence[2], sentence[3], tokens, labels])
 
-print 678
+
 
 # Transform sentences and labels into numpy array.
 token_x = np.zeros((token_x_100, token_x_010, token_x_001), dtype=np.float64) # token_x.shape => (33700, 30, 100)
@@ -150,7 +140,7 @@ for i in range(0, len(adjusts)):
         sentence_x[j] = encode
 
 
-        # Transform labels into numpy array.
+        # Transform labels into numpy array. 0
         lable = sentence[5][j]
         lable_y = np.zeros((1, token_y_001), dtype=np.bool) # lable_y.shape => (1, 24)
         lable_y[0, labe_indices[lable]] = 1
@@ -158,15 +148,14 @@ for i in range(0, len(adjusts)):
 
     token_x[i] = sentence_x
     token_y[i] = sentence_y
-print 789
-pickle.dump(token_x,  open(path+"model/token_x_mv.pk", "wb"))
-pickle.dump(token_y,  open(path+"model/token_y_mv.pk", "wb"))
+
+pickle.dump(token_x,  open(path+"model/token_x_punkt_0_30.pk", "wb"))
+pickle.dump(token_y,  open(path+"model/token_y_punkt_0_30.pk", "wb"))
 
 
 # build the model: a bidirectional LSTM
-token_x = pickle.load(open(path+"model/token_x_mv.pk", "rb" ))
-token_y = pickle.load(open(path+"model/token_y_mv.pk", "rb" ))
-
+token_x = pickle.load(open(path+"model/token_x_punkt_0_30.pk", "rb" ))
+token_y = pickle.load(open(path+"model/token_y_punkt_0_30.pk", "rb" ))
 
 print('Build model...')
 left = Sequential()
@@ -187,12 +176,23 @@ label_model.add(TimeDistributed(Dense((24), activation='sigmoid')))
 
 label_model.compile('adam', 'categorical_crossentropy', metrics=['accuracy'])
 
-#label_model.compile('adam', 'categorical_crossentropy', metrics=['top_k_categorical_accuracy'])
-
 train = label_model.fit([token_x,token_x], token_y,
           batch_size=128,
-          nb_epoch=10)
-label_model.save(path+"model/biLSTM_label_.pk")
+          nb_epoch=1)
+
+label_model.save(path+"model/biLSTM_label_1.pk")
+
+
+# build the model: a bidirectional LSTM
+token_x = pickle.load(open(path+"model/token_x_punkt_0_30.pk", "rb" ))
+token_y = pickle.load(open(path+"model/token_y_punkt_0_30.pk", "rb" ))
+
+label_model = load_model(path+"model/biLSTM_label_1.pk")
+label_model.fit([token_x,token_x], token_y,
+          batch_size=128,
+          nb_epoch=1)
+
+
 
 
 # prediction test

@@ -73,31 +73,30 @@ token_y_001 = 24                               # PHI level: 23+1
 
 
 # load model and test.
-'''
-if "having" in vocab.keys():
-    map_GloVe = W[vocab['having'][0]]
+#if "having" in vocab.keys():
+#    map_GloVe = W[vocab['having'][0]]
+#
+#text = 'having'.ljust(len_X_010)
+#x = np.zeros((1, len_X_010, len_X_001), dtype=np.bool)
+#
+#for j in range(0, len(text)):
+#    x[0, j, char_indices[text[j]]] = 1
+#map_LSTM = model.predict([x,x], verbose=0)
+#
+#print 'Load model and test.'
 
-text = 'having'.ljust(len_X_010)
-x = np.zeros((1, len_X_010, len_X_001), dtype=np.bool)
+#Define sentence length 95% sentence less then 30 words.
 
-for j in range(0, len(text)):
-    x[0, j, char_indices[text[j]]] = 1
-map_LSTM = model.predict([x,x], verbose=0)
+#lens=[]
+#for i in sentences:
+#    lens.append(len(i[4]))
+#arlens=np.asarray(lens)
+#print "Define sentence length 91.5% sentence less then "+ str(np.percentile(arlens, 91.5)) +" words." # 30.0
 
-print 'Load model and test.'
 '''
-# Define sentence length 95% sentence less then 30 words.
-'''
-lens=[]
-for i in sentences:
-    lens.append(len(i[4]))
-arlens=np.asarray(lens)
-print "Define sentence length 91.5% sentence less then "+ str(np.percentile(arlens, 91.5)) +" words." # 30.0
-'''
-
+adjusts = []
 # Adjust tokens into fixed size, adjust sentences and labels into fixed size.
 
-adjusts = []
 for i in range(0, len(sentences)):
     sentence = sentences[i]
 
@@ -151,7 +150,7 @@ for i in range(0, len(adjusts)):
 
 pickle.dump(token_x,  open(path+"model/token_x.pk", "wb"))
 pickle.dump(token_y,  open(path+"model/token_y.pk", "wb"))
-
+'''
 
 # build the model: a bidirectional LSTM
 token_x = pickle.load(open(path+"model/token_x.pk", "rb" ))
@@ -178,7 +177,7 @@ label_model.compile('adam', 'categorical_crossentropy', metrics=['accuracy'])
 
 train = label_model.fit([token_x,token_x], token_y,
           batch_size=128,
-          nb_epoch=1)
+          nb_epoch=10)
 label_model.save(path+"model/biLSTM_label_1.pk")
 
 
@@ -192,7 +191,7 @@ for j in range(0,token_y_010):
 print "pred :"+" ".join(pred_labels)
 print "read :"+" ".join(adjusts[i][5])
 '''
-
+'''
 plt.plot(train.history['acc'])
 plt.plot(train.history['val_acc'])
 plt.title('model accuracy')
@@ -208,5 +207,6 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'test'], loc='upper left')
 plt.show()
+'''
 
 print "end"
