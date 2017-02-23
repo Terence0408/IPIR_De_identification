@@ -19,90 +19,109 @@ np.random.seed(19870712)  # for reproducibility
 path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/"
 get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
 
+import nltk
+import re
 import h5py # It needs at save keras model
 from keras.models import Sequential, load_model
 from keras.layers import LSTM
 from keras.engine.topology import Merge
 
 
-
-vocab = pickle.load(open(path+"model/GloVe_vocab.pk", "rb" ))
-W = pickle.load(open(path+"model/GloVe_W.pk", "rb" ))
-
-#load model and test.
-'''
-if "having" in vocab.keys():
-   print W[vocab['having'][0]]
-print 'Load no error.'
-'''
-
 chars= [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
         'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
+char_X_100 = 399488               # words: 399488
+char_X_010 = 43                   # max word length: 43
+char_X_001 = 37                   # chars: 37
+char_Y_10  = 399488               # words: 399488
+char_Y_01  = 100                  # encode word length: 100
 
-char_X_100 = len(vocab.keys())                # words: 33299
-char_X_010 = len(max(vocab.keys(), key=len))  # max word length: 54
-char_X_001 = len(chars)                       # chars: 37
-char_Y_10  = W.shape[0]                       # words: 33299
-char_Y_01  = W.shape[1]                       # encode word length: 100
+text_file = open(path+"glove.6B/glove.6B.100d.txt", 'r')
+glove = text_file.readlines()
 
 
+
+# Arrange data set into x, y type.
+
+vocab = []
 X = np.zeros((char_X_100, char_X_010, char_X_001), dtype=np.bool)
 y = np.zeros((char_Y_10, char_Y_01 ), dtype=np.float64)
 
-for i in range(0, char_X_100):
-    text = vocab.keys()[i].ljust(char_X_010)
-    for j in range(0, char_X_010):
-        X[i, j, char_indices[text[j]]] = 1
-    y[i] = W[vocab[vocab.keys()[i]][0]]
+ii = 0
+for i in range(0,400000):
+    lists = glove[i].split()
+    lists[0] = re.sub("[^0-9a-zA-Z]", "", lists[0])
+    if len(lists[0]) != 0:
+        print ii, i
+        vocab.append(lists[0])
+        text = lists[0].ljust(char_X_010)
+        for j in range(0, char_X_010):
+            X[ii, j, char_indices[text[j]]] = 1
+        for k in range(1,101):
+            y[ii,k-1] = lists[k]
+        ii = ii + 1
+    #if i % 40000 == 0:
+    #   print i
+
+lens=[]
+for word in vocab:
+    lens.append(len(word))
+print max(lens)
+print len(vocab) # 399488
 
 
 
-# build the model: a bidirectional LSTM
+
+# First time: build the model: a bidirectional LSTM
+
 print('Build model...')
 left = Sequential()
 left.add(LSTM(100, input_shape=(char_X_010, char_X_001), activation='tanh',
               inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5))
-
 right = Sequential()
 right.add(LSTM(100, input_shape=(char_X_010, char_X_001), activation='tanh',
                inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5, go_backwards=True))
-
-
 model = Sequential()
 model.add(Merge([left, right], mode='sum'))
-model.compile('adam', 'mse', metrics=['accuracy'])
+model.compile('Adadelta', 'MSE', metrics=['accuracy'])
+model.fit([X,X], y, batch_size=512, nb_epoch=1)
+model.save(path+"model/biLSTM_char_pretrain.pk")
 
 
 
-for i in range(0,2000):
+# Not first time: build the model: a bidirectional LSTM
+
+from scipy import spatial
+print('Load model...')
+model = load_model(path+"model/biLSTM_char_pretrain.pk")
+for j in range(0,20):
     model.fit([X,X], y,
-              batch_size=128,
-              nb_epoch=5)
+              batch_size=512,
+              nb_epoch=1)
+    model.save(path+"model/biLSTM_char_pretrain.pk")
+'''
+    # Test cosine similarity
+    cos = []
+    for i in range(0, len(vocab)):
+        text = vocab[i].ljust(char_X_010)
+        x = np.zeros((1, char_X_010, char_X_001), dtype=np.bool)
+        for j in range(0, len(text)):
+            x[0, j, char_indices[text[j]]] = 1
+        map_LSTM = model.predict([x, x], verbose=0)
 
-    model.save(path+"model/biLSTM_char.pk")
-    print i
+        map_GloVe = y[i]
+
+        cos.append(1 - spatial.distance.cosine(map_LSTM, map_GloVe))
+    print sum(cos)/len(cos)
+'''
+
+
+
+
+
+
+
 print "end"
-
-# load model and test.
-'''
-model = load_model(path+"model/biLSTM_char.pk")
-chars= [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
-        'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-char_indices = dict((c, i) for i, c in enumerate(chars))
-indices_char = dict((i, c) for i, c in enumerate(chars))
-
-if "having" in vocab.keys():
-    map_GloVe = W[vocab['having'][0]]
-
-text = 'having'.ljust(len_X_010)
-x = np.zeros((1, len_X_010, len_X_001), dtype=np.bool)
-
-for j in range(0, len(text)):
-    x[0, j, char_indices[text[j]]] = 1
-map_LSTM = model.predict([x,x], verbose=0)
-'''
