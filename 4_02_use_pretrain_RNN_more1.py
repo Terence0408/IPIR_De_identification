@@ -37,14 +37,14 @@ indices_char = dict((i, c) for i, c in enumerate(chars))
 
 def what_d(dim=100, runtimes = 1, renew =True, maxlen=18):
 
-    char_X_100 = 695698               # words: 399488
+    char_X_100 = 2196017               # words: 399488
     char_X_010 = maxlen               # max word length: 43
     char_X_001 = 37                   # chars: 37
-    char_Y_10  = 695698               # words: 399488
+    char_Y_10  = 2196017               # words: 399488
     char_Y_01  = dim                  # encode word length: 100
 
     # Read and arrange data set into x, y type.
-    text_file = open(path+"glove.6B/glove.twitter.27B."+str(dim)+"d.txt", 'r')
+    text_file = open(path+"glove.6B/glove.840B.300d.txt", 'r')
     glove = text_file.readlines()
 
     vocab = []
@@ -52,7 +52,7 @@ def what_d(dim=100, runtimes = 1, renew =True, maxlen=18):
     y = np.zeros((char_Y_10, char_Y_01 ), dtype=np.float64)
 
     ii = 0
-    for i in range(0,1193514):
+    for i in range(0,2196017):
         lists = glove[i].split()
         lists[0] = re.sub("[^0-9a-zA-Z]", "", lists[0])
         if 0 < len(lists[0]) <= maxlen:
@@ -155,10 +155,7 @@ def what_d(dim=100, runtimes = 1, renew =True, maxlen=18):
     f.write(str(dim)+"d. 22 times biRNN twitter misspelling cosine similarity : "+str(sum(cos)/len(cos))+", len: "+str(len(cos))+"\n")
     f.close()
 
-what_d(dim=100, runtimes =  22, renew =True,  maxlen = 18)
-#what_d(dim=50,  runtimes = 22, renew =True)
-#what_d(dim=200, runtimes = 22, renew =True)
-#what_d(dim=300, runtimes = 22, renew =True)
+what_d(dim=300, runtimes =  22, renew =True,  maxlen = 18)
 
 print "end"
 

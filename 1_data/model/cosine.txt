@@ -10,3 +10,8 @@
 100d. 22 times biRNN cosine similarity: 0.384264337357
 100d. 22 times biRNN misspelling cosine similarity : 0.374081974716, len: 329272
 
+
+100d. 22 times biRNN cosine similarity: 0.39191065449
+100d. 22 times biRNN misspelling cosine similarity : 0.38002013078, len: 284601
+100d. 22 times biRNN twitter cosine similarity: 0.369756741645
+100d. 22 times biRNN twitter misspelling cosine similarity : 0.37322237968, len: 573770

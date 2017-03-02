@@ -35,10 +35,10 @@ chars= [' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
-def what_d(dim=100, runtimes = 1, renew =True):
+def what_d(dim=100, runtimes = 1, renew =True, maxlen=18):
 
     char_X_100 = 399488               # words: 399488
-    char_X_010 = 43                   # max word length: 43
+    char_X_010 = maxlen               # max word length: 43
     char_X_001 = 37                   # chars: 37
     char_Y_10  = 399488               # words: 399488
     char_Y_01  = dim                  # encode word length: 100
@@ -55,7 +55,7 @@ def what_d(dim=100, runtimes = 1, renew =True):
     for i in range(0,400000):
         lists = glove[i].split()
         lists[0] = re.sub("[^0-9a-zA-Z]", "", lists[0])
-        if len(lists[0]) != 0:
+        if 0<len(lists[0]) <= maxlen:
             print ii, i
             vocab.append(lists[0])
             text = lists[0].ljust(char_X_010)
@@ -68,13 +68,15 @@ def what_d(dim=100, runtimes = 1, renew =True):
         #   print i
 
     # Find par.
-    '''
     lens=[]
     for word in vocab:
         lens.append(len(word))
     print max(lens)
     print len(vocab) # 399488
-    '''
+    char_X_100 = len(vocab)
+    char_Y_10  = len(vocab)
+    X = X[0:len(vocab)]
+    y = y[0:len(vocab)]
 
     # First time: build the model: a bidirectional LSTM
     if renew == True:
@@ -152,7 +154,7 @@ def what_d(dim=100, runtimes = 1, renew =True):
     f.write(str(dim)+"d. 22 times biRNN misspelling cosine similarity : "+str(sum(cos)/len(cos))+", len: "+str(len(cos))+"\n")
     f.close()
 
-what_d(dim=100, runtimes =  22, renew =True)
+what_d(dim=100, runtimes =  22, renew =True, maxlen = 10)
 #what_d(dim=50,  runtimes = 22, renew =True)
 #what_d(dim=200, runtimes = 22, renew =True)
 #what_d(dim=300, runtimes = 22, renew =True)
