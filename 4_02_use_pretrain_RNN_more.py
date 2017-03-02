@@ -37,14 +37,14 @@ indices_char = dict((i, c) for i, c in enumerate(chars))
 
 def what_d(dim=100, runtimes = 1, renew =True):
 
-    char_X_100 = 399488               # words: 399488
-    char_X_010 = 43                   # max word length: 43
+    char_X_100 = 695698               # words: 399488
+    char_X_010 = 140                   # max word length: 43
     char_X_001 = 37                   # chars: 37
-    char_Y_10  = 399488               # words: 399488
+    char_Y_10  = 695698               # words: 399488
     char_Y_01  = dim                  # encode word length: 100
 
     # Read and arrange data set into x, y type.
-    text_file = open(path+"glove.6B/glove.6B."+str(dim)+"d.txt", 'r')
+    text_file = open(path+"glove.6B/glove.twitter.27B."+str(dim)+"d.txt", 'r')
     glove = text_file.readlines()
 
     vocab = []
@@ -52,7 +52,7 @@ def what_d(dim=100, runtimes = 1, renew =True):
     y = np.zeros((char_Y_10, char_Y_01 ), dtype=np.float64)
 
     ii = 0
-    for i in range(0,400000):
+    for i in range(0,1193514):
         lists = glove[i].split()
         lists[0] = re.sub("[^0-9a-zA-Z]", "", lists[0])
         if len(lists[0]) != 0:
@@ -81,27 +81,29 @@ def what_d(dim=100, runtimes = 1, renew =True):
         print('Build model...')
         left = Sequential()
         left.add(SimpleRNN(dim, input_shape=(char_X_010, char_X_001), activation='tanh',
-                      inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5))
+                      #inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5))
+                      dropout_W=0.5, dropout_U=0.5))
         right = Sequential()
         right.add(SimpleRNN(dim, input_shape=(char_X_010, char_X_001), activation='tanh',
-                       inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5, go_backwards=True))
+                       #inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5, go_backwards=True))
+                       dropout_W=0.5, dropout_U=0.5, go_backwards=True))
         model = Sequential()
         model.add(Merge([left, right], mode='sum'))
         model.compile('Adadelta', 'MSE', metrics=['accuracy'])
         model.fit([X,X], y, batch_size=512, nb_epoch=1)
-        model.save(path+"model/biLSTM_char_pretrain_"+str(dim)+"d.pk")
+        model.save(path+"model/biRNN_char_pretrain_twitter_"+str(dim)+"d.pk")
 
 
     # Not first time: build the model: a bidirectional LSTM
 
     print('Load model...')
-    model = load_model(path+"model/biLSTM_char_pretrain_"+str(dim)+"d.pk")
+    model = load_model(path+"model/biRNN_char_pretrain_twitter_"+str(dim)+"d.pk")
     for j in range(0,runtimes-1):
         print('Build model...')
         model.fit([X,X], y,
                   batch_size=512,
                   nb_epoch=1)
-        model.save(path+"model/biLSTM_char_pretrain_"+str(dim)+"d.pk")
+        model.save(path+"model/biRNN_char_pretrain_twitter_"+str(dim)+"d.pk")
 
 
     # Test cosine similarity, train set
@@ -118,7 +120,7 @@ def what_d(dim=100, runtimes = 1, renew =True):
 
         cos.append(1 - spatial.distance.cosine(map_LSTM, map_GloVe))
     f = open(path+"model/cosine.txt", 'a')
-    f.write(str(dim)+"d. 22 times cosine similarity: "+str(sum(cos)/len(cos))+"\n")
+    f.write(str(dim)+"d. 22 times biRNN twitter cosine similarity: "+str(sum(cos)/len(cos))+"\n")
     f.close()
 
 
@@ -147,12 +149,12 @@ def what_d(dim=100, runtimes = 1, renew =True):
 
             cos.append(1 - spatial.distance.cosine(map_LSTM, map_GloVe))
     f = open(path+"model/cosine.txt", 'a')
-    f.write(str(dim)+"d. 22 times misspelling cosine similarity : "+str(sum(cos)/len(cos))+", len: "+str(len(cos))+"\n")
+    f.write(str(dim)+"d. 22 times biRNN twitter misspelling cosine similarity : "+str(sum(cos)/len(cos))+", len: "+str(len(cos))+"\n")
     f.close()
 
 what_d(dim=100, runtimes =  22, renew =True)
-#what_d(dim=50,  runtimes = 22, renew =True)
-#what_d(dim=200, runtimes = 22, renew =True)
+what_d(dim=50,  runtimes = 22, renew =True)
+what_d(dim=200, runtimes = 22, renew =True)
 #what_d(dim=300, runtimes = 22, renew =True)
 
 print "end"

@@ -81,27 +81,29 @@ def what_d(dim=100, runtimes = 1, renew =True):
         print('Build model...')
         left = Sequential()
         left.add(SimpleRNN(dim, input_shape=(char_X_010, char_X_001), activation='tanh',
-                      inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5))
+                      #inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5))
+                      dropout_W=0.5, dropout_U=0.5))
         right = Sequential()
         right.add(SimpleRNN(dim, input_shape=(char_X_010, char_X_001), activation='tanh',
-                       inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5, go_backwards=True))
+                       #inner_activation='sigmoid', dropout_W=0.5, dropout_U=0.5, go_backwards=True))
+                       dropout_W=0.5, dropout_U=0.5, go_backwards=True))
         model = Sequential()
         model.add(Merge([left, right], mode='sum'))
         model.compile('Adadelta', 'MSE', metrics=['accuracy'])
         model.fit([X,X], y, batch_size=512, nb_epoch=1)
-        model.save(path+"model/biLSTM_char_pretrain_"+str(dim)+"d.pk")
+        model.save(path+"model/biRNN_char_pretrain_"+str(dim)+"d.pk")
 
 
     # Not first time: build the model: a bidirectional LSTM
 
     print('Load model...')
-    model = load_model(path+"model/biLSTM_char_pretrain_"+str(dim)+"d.pk")
+    model = load_model(path+"model/biRNN_char_pretrain_"+str(dim)+"d.pk")
     for j in range(0,runtimes-1):
         print('Build model...')
         model.fit([X,X], y,
                   batch_size=512,
                   nb_epoch=1)
-        model.save(path+"model/biLSTM_char_pretrain_"+str(dim)+"d.pk")
+        model.save(path+"model/biRNN_char_pretrain_"+str(dim)+"d.pk")
 
 
     # Test cosine similarity, train set
@@ -118,7 +120,7 @@ def what_d(dim=100, runtimes = 1, renew =True):
 
         cos.append(1 - spatial.distance.cosine(map_LSTM, map_GloVe))
     f = open(path+"model/cosine.txt", 'a')
-    f.write(str(dim)+"d. 22 times cosine similarity: "+str(sum(cos)/len(cos))+"\n")
+    f.write(str(dim)+"d. 22 times biRNN cosine similarity: "+str(sum(cos)/len(cos))+"\n")
     f.close()
 
 
@@ -147,7 +149,7 @@ def what_d(dim=100, runtimes = 1, renew =True):
 
             cos.append(1 - spatial.distance.cosine(map_LSTM, map_GloVe))
     f = open(path+"model/cosine.txt", 'a')
-    f.write(str(dim)+"d. 22 times misspelling cosine similarity : "+str(sum(cos)/len(cos))+", len: "+str(len(cos))+"\n")
+    f.write(str(dim)+"d. 22 times biRNN misspelling cosine similarity : "+str(sum(cos)/len(cos))+", len: "+str(len(cos))+"\n")
     f.close()
 
 what_d(dim=100, runtimes =  22, renew =True)
