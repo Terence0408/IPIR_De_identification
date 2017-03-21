@@ -12,7 +12,7 @@
 #       3. Concentrate GloVe result and lstm result. If no GloVe result, use lstm result instant of.
 
 import logging
-import cPickle as pickle
+import pickle
 import psycopg2
 import numpy as np
 np.random.seed(19870712)  # for reproducibility
@@ -84,8 +84,8 @@ for i in range(0,2000):
               nb_epoch=5)
 
     model.save(path+"model/biLSTM_char.pk")
-    print i
-print "end"
+    print(i)
+print("end")
 
 # load model and test.
 '''

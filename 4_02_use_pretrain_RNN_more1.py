@@ -12,12 +12,12 @@
 #       3. Concentrate GloVe result and lstm result. If no GloVe result, use lstm result instant of.
 
 import logging
-import cPickle as pickle
+import pickle as pickle
 import psycopg2
 import numpy as np
 np.random.seed(19870712)  # for reproducibility
-path = "/home/terence/pycharm_use/IPIR_De_identification/1_data/"
-get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
+path = "D:/Develop_code/IPIR/IPIR_De_identification/1_data/"
+#get_conn = psycopg2.connect(dbname='IPIR_De_identification',user='postgres', host='localhost', password='postgres')
 
 import nltk
 import re
@@ -44,7 +44,7 @@ def what_d(dim=100, runtimes = 1, renew =True, maxlen=18):
     char_Y_01  = dim                  # encode word length: 100
 
     # Read and arrange data set into x, y type.
-    text_file = open(path+"glove.6B/glove.840B.300d.txt", 'r')
+    text_file = open(path+"glove.6B/glove.840B.300d.txt", 'r',encoding="utf-8")
     glove = text_file.readlines()
 
     vocab = []
@@ -52,11 +52,13 @@ def what_d(dim=100, runtimes = 1, renew =True, maxlen=18):
     y = np.zeros((char_Y_10, char_Y_01 ), dtype=np.float64)
 
     ii = 0
-    for i in range(0,2196017):
-        lists = glove[i].split()
-        lists[0] = re.sub("[^0-9a-zA-Z]", "", lists[0])
+    for i in range(0,133):#2196017):
+        ttt = glove[i].split()
+        ttt_lens = len(ttt)
+        lists = ["".join(ttt[0:ttt_lens - dim])] + ttt[ttt_lens- dim:]
+        lists[0] = re.sub("[^0-9a-zA-Z]", "", lists[0].lower())
         if 0 < len(lists[0]) <= maxlen:
-            print ii, i
+            print (ii, i)
             vocab.append(lists[0])
             text = lists[0].ljust(char_X_010)
             for j in range(0, char_X_010):
@@ -72,8 +74,8 @@ def what_d(dim=100, runtimes = 1, renew =True, maxlen=18):
     lens=[]
     for word in vocab:
         lens.append(len(word))
-    print max(lens)
-    print len(vocab) # 399488
+    print (max(lens))
+    print (len(vocab)) # 399488
     char_X_100 = len(vocab)
     char_Y_10  = len(vocab)
     X = X[0:len(vocab)]
@@ -157,6 +159,5 @@ def what_d(dim=100, runtimes = 1, renew =True, maxlen=18):
 
 what_d(dim=300, runtimes =  22, renew =True,  maxlen = 18)
 
-print "end"
-
+print ("end")
 

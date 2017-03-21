@@ -12,7 +12,7 @@
 #       3. Concentrate GloVe result and lstm result. If no GloVe result, use lstm result instant of.
 
 import logging
-import cPickle as pickle
+import pickle
 import psycopg2
 import numpy as np
 np.random.seed(19870712)  # for reproducibility
@@ -56,7 +56,7 @@ def what_d(dim=100, runtimes = 1, renew =True):
         lists = glove[i].split()
         lists[0] = re.sub("[^0-9a-zA-Z]", "", lists[0])
         if len(lists[0]) != 0:
-            print ii, i
+            print (ii, i)
             vocab.append(lists[0])
             text = lists[0].ljust(char_X_010)
             for j in range(0, char_X_010):
